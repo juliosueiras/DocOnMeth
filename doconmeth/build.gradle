@@ -1,0 +1,19 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.0'
+    }
+}
+apply plugin: 'android'
+
+android {
+    compileSdkVersion 'android-18'
+    buildToolsVersion '24.0.2'
+
+    buildTypes {
+        release {
+        }
+    }
+}
