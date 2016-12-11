@@ -10,7 +10,7 @@
     <application
         android:label="@string/app_name"
         android:icon="@drawable/ic_launcher"
-        android:theme="@style/AppTheme"
+        android:theme="@style/DefaultMaterialTheme"
         >
         <activity android:name="MainActivity"
             android:theme="@style/AppTheme"
@@ -20,5 +20,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="fe663df56fc2cc9a4ded21e595cc1a0c3cc492f4"
+            />
+        <meta-data
+            android:name="com.bugsnag.android.API_KEY"
+            android:value="0d1a706cbe3e6736f2446e02546e2204"/>
     </application>
+    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Tip Calculator</string>
+    <string name="app_name">DocOnMeth</string>
 
     <string-array name="tip_amount">
         <item>10%</item>

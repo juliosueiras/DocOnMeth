@@ -1,10 +1,13 @@
 buildscript {
     repositories {
         jcenter()
+        maven { url 'https://maven.fabric.io/public' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0'
+        classpath 'com.android.tools.build:gradle:+'
         classpath 'me.tatarka:gradle-retrolambda:3.3.0'
+        classpath 'io.fabric.tools:gradle:1.+'
+        classpath 'com.antfortune.freeline:gradle:0.8.3'
     }
 }
 
@@ -17,10 +20,17 @@ allprojects {
 apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda'
 
+apply plugin: 'io.fabric'
+apply plugin: 'com.antfortune.freeline'
+
+repositories {
+  maven { url 'https://maven.fabric.io/public' }
+}
+
 
 android {
     compileSdkVersion 'android-18'
-    buildToolsVersion '23.0.2'
+    buildToolsVersion '25.0.0'
 
     defaultConfig {
         applicationId "com.juliosueiras.doconmeth"
@@ -31,10 +41,21 @@ android {
         versionName "1.0"
     }
 
+    signingConfigs {
+
+        release {
+            storeFile file(RELEASE_STORE_FILE)
+                storePassword RELEASE_STORE_PASSWORD
+                keyAlias RELEASE_KEY_ALIAS
+                keyPassword RELEASE_KEY_PASSWORD
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+                signingConfig signingConfigs.release
         }
         monkey {
         }
@@ -49,9 +70,21 @@ apply from: "quality.gradle"
 
 dependencies {
     compile 'com.android.support:support-annotations:23.2.1'
+    compile 'com.android.support:support-compat:25.0.1'
+    compile 'com.android.support:support-fragment:25.0.1'
     compile 'com.android.support:appcompat-v7:23.2.1'
     compile 'com.android.support:design:23.2.1'
+    compile 'com.android.support:design:23.0.1'
     compile 'com.facebook.stetho:stetho:1.4.1'
 
     androidTestCompile 'com.android.support:support-annotations:23.2.1'
+
+    compile 'com.bugsnag:bugsnag-android:3.+'
+
+    compile('com.crashlytics.sdk.android:answers:1.3.10@aar') {
+        transitive = true;
+    }
+    compile('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
+        transitive = true;
+    }
 }
