@@ -2,23 +2,6 @@
 <resources>
     <string name="app_name">DocOnMeth</string>
 
-    <string-array name="tip_amount">
-        <item>10%</item>
-        <item>15%</item>
-        <item>20%</item>
-        <item>Other</item>
-    </string-array>
+    <string name="handlebars">http://london.kapeli.com/feeds/Handlebars.tgz</string>
 
-    <string-array name="people">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-        <item>7</item>
-        <item>8</item>
-        <item>9</item>
-        <item>10</item>
-    </string-array>
 </resources>
