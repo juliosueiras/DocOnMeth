@@ -27,6 +27,7 @@ import java.lang.Process;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
+import com.orm.query.Select;
 
 import org.rauschig.jarchivelib.Archiver;
 import org.rauschig.jarchivelib.ArchiverFactory;
@@ -42,6 +43,7 @@ import io.fabric.sdk.android.Fabric;
 public class MainActivity extends ListActivity {
 
     ActivityMainBinding binding;
+	BroadcastReceiver onComplete;
 
 	/**
 	 * @param context used to check the device version and DownloadManager information
@@ -72,7 +74,7 @@ public class MainActivity extends ListActivity {
         Stetho.initializeWithDefaults(this);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
-        BroadcastReceiver onComplete=new BroadcastReceiver() {
+         onComplete = new BroadcastReceiver() {
             public void onReceive(Context ctxt, Intent intent) {
 
                 try {
@@ -82,6 +84,7 @@ public class MainActivity extends ListActivity {
                     Archiver archiver = ArchiverFactory.createArchiver("tar", "gz");
                     archiver.extract(archive, destination);
                     archive.delete();
+
 
                     _showToast("Finish Uncompress");
                 } catch(IOException e){ e.printStackTrace();
@@ -110,9 +113,18 @@ public class MainActivity extends ListActivity {
         // setListAdapter(adapter);
 		// WebView webview = new WebView(this);
 		// setContentView(webview);
-		binding.webview.loadUrl("file:///sdcard/Download/Handlebars.docset/Contents/Resources/Documents/handlebarsjs.com/index.html");
+		binding.webview.loadUrl("file:///sdcard/Download/Handlebars.docset/Contents/Resources/Documents/handlebarsjs.com/reference.html#//dash_ref_66/Variable/%40root/0");
 		// webview.loadUrl("http://slashdot.org/");
+		SearchIndex searchIndex = new SearchIndex("test_name", "test_type", "test_path");
+		searchIndex.save();
+
     }
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+        unregisterReceiver(onComplete);
+	}
 
 
     @Override
@@ -152,6 +164,12 @@ public class MainActivity extends ListActivity {
     }
 
 }
+
+
+
+
+
+
 
 
 

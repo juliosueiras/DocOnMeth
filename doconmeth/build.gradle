@@ -77,4 +77,6 @@ dependencies {
     compile('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
         transitive = true;
     }
+
+    compile 'com.github.satyan:sugar:1.4'
 }
