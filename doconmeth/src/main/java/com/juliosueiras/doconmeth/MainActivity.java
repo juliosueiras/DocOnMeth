@@ -27,7 +27,9 @@ import java.lang.Process;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
+
 import com.orm.query.Select;
+import com.orm.query.Condition;
 
 import org.rauschig.jarchivelib.Archiver;
 import org.rauschig.jarchivelib.ArchiverFactory;
@@ -78,7 +80,7 @@ public class MainActivity extends ListActivity {
             public void onReceive(Context ctxt, Intent intent) {
 
                 try {
-                    File archive = new File("/sdcard/Download/Handlebars.tgz");
+                    File archive = new File("/sdcard/Download/HTML.tgz");
                     File destination = new File("/sdcard/Download/");
 
                     Archiver archiver = ArchiverFactory.createArchiver("tar", "gz");
@@ -96,28 +98,22 @@ public class MainActivity extends ListActivity {
 
         registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
-        //listView = (ListView) findViewById(R.id.list);
-        String[] values = new String[] { "Handlebars" };
+			ArrayList<String> values = new ArrayList<String>();
+			List<SearchIndex> searchIndexs = SearchIndex.listAll(SearchIndex.class);
+
+			for (SearchIndex searchIndex : searchIndexs) {
+				values.add(searchIndex.name);
+			}
 
 
-        // Define a new Adapter
-        // First parameter - Context
-        // Second parameter - Layout for the row
-        // Third - the Array of data
-
-        // ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-        //         android.R.layout.simple_list_item_1, values);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_1, values);
 
 
         // Assign adapter to List
-        // setListAdapter(adapter);
+        setListAdapter(adapter);
 		// WebView webview = new WebView(this);
 		// setContentView(webview);
-		binding.webview.loadUrl("file:///sdcard/Download/Handlebars.docset/Contents/Resources/Documents/handlebarsjs.com/reference.html#//dash_ref_66/Variable/%40root/0");
-		// webview.loadUrl("http://slashdot.org/");
-		SearchIndex searchIndex = new SearchIndex("test_name", "test_type", "test_path");
-		searchIndex.save();
-
     }
 
 	@Override
@@ -133,34 +129,32 @@ public class MainActivity extends ListActivity {
         super.onListItemClick(l, v, position, id);
 
         // ListView Clicked item index
-        int itemPosition = position;
-		File f = new File(Environment.getExternalStorageDirectory() + "/Download/Handlebars.docset");
+		File f = new File(Environment.getExternalStorageDirectory() + "/Download/HTML.docset");
 		if(!f.isDirectory()) {
-			String url = "http://london.kapeli.com/feeds/Handlebars.tgz";
+			String url = "http://sanfrancisco.kapeli.com/feeds/HTML.tgz";
 			DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-			request.setDescription("Handlebars Download");
-			request.setTitle("Handlebars");
+			request.setDescription("HTML Download");
+			request.setTitle("HTML");
 
 			// in order for this if to run, you must use the android 3.2 to compile your app
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 				request.allowScanningByMediaScanner();
 				request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
 			}
-			request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "Handlebars.tgz");
+			request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "HTML.tgz");
 
 			// get download service and enqueue file
 			DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
 			manager.enqueue(request);
+		} else {
+			SearchIndex searchIndex = Select.from(SearchIndex.class).where(Condition.prop("id").eq(position)).list().get(0);
+			binding.webview.loadUrl("file:///sdcard/Download/HTML.docset/Contents/Resources/Documents/" + searchIndex.type);
 		}
 
-		Uri uri = Uri.parse("http://www.google.ca");
-		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-		startActivity(intent);
         // // ListView Clicked item value
         // Answers.getInstance().logCustom(new CustomEvent("User click on an Item ")
         //         .putCustomAttribute("Item Value",itemValue));
         // binding.output.setText("Click : \n  Position :"+itemPosition+"  \n  ListItem : " +itemValue);
-
     }
 
 }

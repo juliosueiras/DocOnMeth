@@ -11,9 +11,14 @@
         <TextView android:id="@+id/output"
             android:background="#758AA7"
             android:layout_height="wrap_content"
-            android:padding="1px"
             android:textColor="#ffffff"
             android:text="Click : " android:layout_width="fill_parent" />
+
+        <ListView
+            android:id="@android:id/list"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent">
+        </ListView>
 
 		<WebView
 			android:id="@+id/webview"
@@ -21,11 +26,6 @@
 			android:layout_height="fill_parent"
 			/>
 
-        <ListView
-            android:id="@android:id/list"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent">
-        </ListView>
 
     </LinearLayout>
 </layout>
