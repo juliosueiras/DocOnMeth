@@ -1,9 +1,9 @@
 default:
-	./gradlew installDebug --daemon && adb shell am start -n com.juliosueiras.doconmeth/.MainActivity
+	python2 freeline.py
+gradle:
+	./gradlew installDebug --daemon
+start:
+	adb shell am start -n com.juliosueiras.doconmeth/.MainActivity
 
-spoon:
-	./gradlew spoon --daemon
-
-test:
-	./gradlew connectedAndroidTest --daemon
+.PHONY: gradle
 
