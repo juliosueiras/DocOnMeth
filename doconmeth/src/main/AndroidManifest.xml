@@ -7,12 +7,15 @@
     <uses-sdk android:minSdkVersion="18" />
 
     <application
+        android:name="com.orm.SugarApp"
         android:label="@string/app_name"
         android:icon="@drawable/ic_launcher"
         android:theme="@style/DefaultMaterialTheme"
         >
+
         <activity android:name="MainActivity"
             android:theme="@style/AppTheme"
+            android:configChanges="orientation|screenSize"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,14 +23,22 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="IndexActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/AppTheme"
+            android:label="@string/app_name">
+        </activity>
+        <meta-data android:name="DATABASE" android:value="doconmeth.db" />
+        <meta-data android:name="VERSION" android:value="3" />
+        <meta-data android:name="QUERY_LOG" android:value="true" />
+        <meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="com.juliosueiras.doconmeth" />
+
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="fe663df56fc2cc9a4ded21e595cc1a0c3cc492f4"
             />
-        <meta-data
-            android:name="com.bugsnag.android.API_KEY"
-            android:value="0d1a706cbe3e6736f2446e02546e2204"/>
     </application>
+
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 </manifest>
