@@ -75,6 +75,7 @@ dependencies {
     compile('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
         transitive = true;
     }
-
+	compile 'com.googlecode.json-simple:json-simple:1.1'
+    compile 'commons-io:commons-io:2.0.1'
     compile 'com.github.satyan:sugar:1.4'
 }

@@ -1,0 +1,26 @@
+[
+    { 
+        "docName": "Emmet.io",
+        "docPath": "http://london.kapeli.com/feeds/Emmet.tgz"
+    },
+    { 
+        "docName": "CSS",
+        "docPath": "http://london.kapeli.com/feeds/CSS.tgz"
+    },
+    { 
+        "docName": "HTML",
+        "docPath": "http://sanfrancisco.kapeli.com/feeds/HTML.tgz"
+    },
+    { 
+        "docName": "JavaScript",
+        "docPath": "http://sanfrancisco.kapeli.com/feeds/JavaScript.tgz"
+    },
+    { 
+        "docName": "C",
+        "docPath": "http://sanfrancisco.kapeli.com/feeds/C.tgz"
+    },
+    { 
+        "docName": "C++",
+        "docPath": "http://newyork.kapeli.com/feeds/C++.tgz"
+    }
+]

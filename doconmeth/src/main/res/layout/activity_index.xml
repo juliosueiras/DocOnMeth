@@ -9,13 +9,18 @@
         android:orientation="vertical"
         tools:context=".ListActivity" >
 
-        <EditText
-            android:id="@+id/edtSearch"
-            android:layout_width="match_parent"
-			android:layout_height="0dp"
-            android:layout_weight="0.1"
-            android:ems="10"
-            android:text="Search for Docs" android:inputType="text" />
+		<android.support.v7.widget.SearchView
+			android:id="@+id/search"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"/>
+
+        <!-- <EditText -->
+        <!--     android:id="@+id/edtSearch" -->
+        <!--     android:layout_width="match_parent" -->
+			<!-- android:layout_height="0dp" -->
+        <!--     android:layout_weight="0.1" -->
+        <!--     android:ems="10" -->
+        <!--     android:text="Search for Docs" android:inputType="text" /> -->
 
         <ListView
             android:id="@+id/index_list"
@@ -23,14 +28,15 @@
 			android:layout_height="0dp"
             android:layout_weight="0.4"
 			>
+
         </ListView>
 
-        <WebView
-            android:id="@+id/webview"
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.5"
-            />
+        <!-- <WebView -->
+        <!--     android:id="@+id/webview" -->
+        <!--     android:layout_width="fill_parent" -->
+        <!--     android:layout_height="0dp" -->
+        <!--     android:layout_weight="0.5" -->
+        <!--     /> -->
 
     </LinearLayout>
 </layout>

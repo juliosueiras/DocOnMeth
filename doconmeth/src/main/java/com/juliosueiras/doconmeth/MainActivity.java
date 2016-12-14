@@ -1,58 +1,66 @@
 package com.juliosueiras.doconmeth;
 
-import android.app.Activity;
 import android.app.DownloadManager;
-import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.view.Menu;
 import android.view.View;
-import android.webkit.WebView;
 import static android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
+import android.databinding.DataBindingUtil;
+
+import android.support.design.widget.Snackbar;
+
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+
+import com.crashlytics.android.answers.Answers;
+
+import com.crashlytics.android.Crashlytics;
+
+import com.facebook.stetho.Stetho;
+
+import com.orm.query.Condition;
+import com.orm.query.Select;
+
+import io.fabric.sdk.android.Fabric;
+
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.Process;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
+
+import org.apache.commons.io.IOUtils;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import org.rauschig.jarchivelib.Archiver;
 import org.rauschig.jarchivelib.ArchiverFactory;
 
-import android.databinding.DataBindingUtil;
-import android.support.v7.app.AppCompatActivity;
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.CustomEvent;
-import com.facebook.stetho.Stetho;
 import com.juliosueiras.doconmeth.databinding.ActivityMainBinding;
-import com.orm.query.Condition;
-import com.orm.query.Select;
-import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity {
-    // String[] docList = {"Handlebars","IPhone","WindowsMobile","Blackberry",
-    //     "WebOS","Ubuntu","Windows7","Max OS X"};
 
 	Map<String, String> docLinkMap = new HashMap<String, String>();
 
@@ -71,6 +79,11 @@ public class MainActivity extends AppCompatActivity {
 
 	private class UncompressDocTask extends AsyncTask<String, Void, String> {
 		@Override
+		protected void onPreExecute() {
+			progress.show();
+		}
+
+		@Override
 		protected String doInBackground(String... params) {
 			try {
 				File archive = new File("/sdcard/Download/" + _currentDocZip);
@@ -88,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
 		@Override
 		protected void onPostExecute(String result) {
+			progress.hide();
 			_showToast(result + " Uncompress");
 		}
 	}
@@ -108,18 +122,38 @@ public class MainActivity extends AppCompatActivity {
         Fabric.with(this, new Answers(), new Crashlytics());
         setContentView(R.layout.activity_main);
 
+
 		progress = new ProgressDialog(this);
 		progress.setTitle("Uncompressing");
 		progress.setMessage("Uncompressing(May take a while)");
 		progress.setCancelable(false);
 
-        docLinkMap.put("Emmet.io", "http://london.kapeli.com/feeds/Emmet.tgz");
-		docLinkMap.put("Akka", "http://newyork.kapeli.com/feeds/Akka.tgz");
-		docLinkMap.put("CSS", "http://london.kapeli.com/feeds/CSS.tgz");
-		docLinkMap.put("Django", "http://sanfrancisco.kapeli.com/feeds/Django.tgz");
-		docLinkMap.put("Android", "http://london.kapeli.com/feeds/Android.tgz");
 
-    //     "WebOS","Ubuntu","Windows7","Max OS X"};
+		JSONParser parser = new JSONParser();
+
+		try {
+
+			String myString = IOUtils.toString(getAssets().open("test.json"), "UTF-8");
+			Object obj = parser.parse(myString);
+
+			JSONArray jsonarray = (JSONArray) obj;
+
+			Iterator<JSONObject> iterator = jsonarray.iterator();
+
+			while (iterator.hasNext()) {
+				JSONObject jsonobject = (JSONObject) iterator.next();
+				String name = (String)jsonobject.get("docName");
+				String path = (String)jsonobject.get("docPath");
+				docLinkMap.put(name, path);
+			}
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 
         ArrayAdapter adapter = new ArrayAdapter<String>(this,
                 R.layout.activity_doc, docLinkMap.keySet().toArray(new String[docLinkMap.size()]));
@@ -129,33 +163,105 @@ public class MainActivity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         binding.docList.setAdapter(adapter);
         binding.docList.setOnItemClickListener(_createOnListItemClick());
+        binding.docList.setOnItemLongClickListener(_createOnListItemLongClick());
 
         onComplete = new BroadcastReceiver() {
             public void onReceive(Context ctxt, Intent intent) {
 				new UncompressDocTask().execute();
-
             }
         };
 
 
         registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-
-			ArrayList<String> values = new ArrayList<String>();
-			List<SearchIndex> searchIndexs = SearchIndex.listAll(SearchIndex.class);
-
-			for (SearchIndex searchIndex : searchIndexs) {
-				values.add(searchIndex.name);
-			}
-
-
-        // ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-        //         android.R.layout.simple_list_item_1, values);
     }
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
         unregisterReceiver(onComplete);
+	}
+
+	private void _downloadDoc(String docName, String docLink, String docZip) {
+		DownloadManager.Request request = new DownloadManager.Request(Uri.parse(docLink));
+		request.setDescription(docName + " Download");
+		request.setTitle(docName);
+
+		// in order for this if to run, you must use the android 3.2 to compile your app
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			request.allowScanningByMediaScanner();
+			request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+		}
+		request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, docZip);
+
+		// get download service and enqueue file
+		DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+
+		_currentDocZip = docZip;
+
+		manager.enqueue(request);
+	}
+
+    protected OnItemLongClickListener _createOnListItemLongClick() {
+        return (l, v, position,id) -> {
+			_deleteDocDialog(position);
+
+			return true;
+        };
+    }
+
+	private static boolean _deleteDirectory(File path) {
+		if( path.exists() ) {
+			File[] files = path.listFiles();
+			if (files == null) {
+				return true;
+			}
+			for(int i=0; i<files.length; i++) {
+				if(files[i].isDirectory()) {
+					_deleteDirectory(files[i]);
+				}
+				else {
+					files[i].delete();
+				}
+			}
+		}
+		return( path.delete() );
+	}
+
+	private void _deleteDocDialog(int position) {
+		String docName = binding.docList.getItemAtPosition(position).toString();
+		String docLink = docLinkMap.get(docName);
+		String docZip  = docLink.split("/")[4];
+		String docDir  = docZip.split(".tgz")[0] + ".docset";
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+		builder.setTitle("Delete " + docName + "?");
+
+		String positiveText = getString(android.R.string.yes);
+		builder.setPositiveButton(positiveText,
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						File f = new File(Environment.getExternalStorageDirectory() + "/Download/" + docDir);
+						if(f.exists()) {
+							_deleteDirectory(f);
+							SearchIndex.deleteInTx(
+                                    Select.from(SearchIndex.class)
+                                    .where(Condition.prop("DOC_TYPE").eq(docZip.split(".tgz")[0])).list());
+						}
+
+					}
+				});
+
+		String negativeText = getString(android.R.string.no);
+		builder.setNegativeButton(negativeText, 
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+					}
+				});
+
+		AlertDialog dialog = builder.create();
+		dialog.show();
 	}
 
 
@@ -166,44 +272,52 @@ public class MainActivity extends AppCompatActivity {
 			String docZip  = docLink.split("/")[4];
 			String docDir  = docZip.split(".tgz")[0] + ".docset";
 
-            // super.onListItemClick(l, v, position, id);
-
-			//ListView Clicked item index
             File f = new File(Environment.getExternalStorageDirectory() + "/Download/" + docDir);
+
             if(!f.isDirectory()) {
-                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(docLink));
-                request.setDescription(docName + " Download");
-                request.setTitle(docName);
 
-                // in order for this if to run, you must use the android 3.2 to compile your app
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                    request.allowScanningByMediaScanner();
-                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                }
-                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, docZip);
+				File docZipFile = new File(Environment.getExternalStorageDirectory() + "/Download/" + docZip);
+				if (docZipFile.isFile()) {
+					_currentDocZip = docZip;
+					new UncompressDocTask().execute();
+				} else {
+					_currentDocZip = docZip;
+					if(isOnline()) {
+						_downloadDoc(docName,docLink,docZip);
+					} else {
+						Snackbar
+							.make(v, "No network connection", Snackbar.LENGTH_INDEFINITE)
+							.setAction("Retry", new View.OnClickListener() {
+								@Override
+								public void onClick(View v) {
+									_downloadDoc(docName,docLink,docZip);
+								}
+							})
+							.show();
+					}
+				}
 
-                // get download service and enqueue file
-                DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-
-				_currentDocZip = docZip;
-
-                manager.enqueue(request);
             } else {
+
 				Intent intent = new Intent(MainActivity.this, IndexActivity.class);
 				intent.putExtra("currentDocDirName", docDir);
 				intent.putExtra("currentDocName", docZip.split(".tgz")[0]);
+
 				startActivity(intent);
             }
 
-            // // ListView Clicked item value
-            // Answers.getInstance().logCustom(new CustomEvent("User click on an Item ")
-            //         .putCustomAttribute("Item Value",itemValue));
-            // binding.output.setText("Click : \n  Position :"+itemPosition+"  \n  ListItem : " +itemValue);
         };
     }
 
 	@Override
 	public void onConfigurationChanged(Configuration newConfig){
 		super.onConfigurationChanged(newConfig);
+	}
+
+	public boolean isOnline() {
+		ConnectivityManager cm =
+			(ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo netInfo = cm.getActiveNetworkInfo();
+		return netInfo != null && netInfo.isConnectedOrConnecting();
 	}
 }
