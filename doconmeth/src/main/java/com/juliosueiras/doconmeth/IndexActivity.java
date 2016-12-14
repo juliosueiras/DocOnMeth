@@ -1,76 +1,101 @@
 package com.juliosueiras.doconmeth;
 
-import android.app.Activity;
-import android.app.ListActivity;
-import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.text.Editable;
-import android.text.TextWatcher;
+import java.lang.Process;
 import android.util.Log;
-import android.view.Menu;
-import android.view.View;
-import android.webkit.WebView;
 import static android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import android.databinding.DataBindingUtil;
+
+import android.support.v7.app.AppCompatActivity;
+
+import com.crashlytics.android.answers.Answers;
+
+import com.crashlytics.android.Crashlytics;
+
+import com.facebook.stetho.Stetho;
+
+import com.orm.query.Condition;
+import com.orm.query.Select;
+
+import io.fabric.sdk.android.Fabric;
+
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.Process;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.zip.GZIPInputStream;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-import org.rauschig.jarchivelib.Archiver;
-import org.rauschig.jarchivelib.ArchiverFactory;
-
-import android.databinding.DataBindingUtil;
-import android.support.v7.app.AppCompatActivity;
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.CustomEvent;
-import com.facebook.stetho.Stetho;
 import com.juliosueiras.doconmeth.databinding.ActivityIndexBinding;
-import com.orm.query.Condition;
-import com.orm.query.Select;
-import io.fabric.sdk.android.Fabric;
 
 public class IndexActivity extends AppCompatActivity {
 
     ActivityIndexBinding binding;
 	List<SearchIndex> currentDocIndexs;
 
-    private void importCSV(String csvPath) {
+	private static String _getValue(String tag, Element element) {
+		NodeList nodeList = element.getElementsByTagName(tag).item(0).getChildNodes();
+		Node node = nodeList.item(0);
+		return node.getNodeValue();
+	}
 
+	private void importXml(File xmlFile) {
+		try {
+			Intent intent = getIntent();
+			String docName = intent.getStringExtra("currentDocName");
+
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(new FileInputStream(xmlFile));
+
+			Element element=doc.getDocumentElement();
+			element.normalize();
+
+			NodeList nList = doc.getElementsByTagName("Token");
+
+			for (int i=0; i<nList.getLength(); i++) {
+
+				Node token = nList.item(i);
+				if (token.getNodeType() == Node.ELEMENT_NODE) {
+					Element e2 = (Element) token;
+					String name = _getValue("Name", e2);
+					String type = _getValue("Type", e2);
+					String path = _getValue("Path", e2);
+					SearchIndex searchIndex = new SearchIndex(name, type, path, docName);
+					searchIndex.save();
+				}
+			}
+
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
+    private void importCSV(String csvPath) {
         Intent intent = getIntent();
         String docName = intent.getStringExtra("currentDocName");
+        _showToast(docName);
 
         try {
             File csvFile = new File(csvPath);
             if(!csvFile.isFile()) {
                 try{
-                    Process su = Runtime.getRuntime().exec("sh");
-                    DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
+                    Process sh = Runtime.getRuntime().exec("sh");
+                    DataOutputStream outputStream = new DataOutputStream(sh.getOutputStream());
 
                     outputStream.writeBytes("cd /sdcard/Download/" + intent.getStringExtra("currentDocDirName") + "/Contents/Resources");
                     outputStream.flush();
@@ -80,7 +105,7 @@ public class IndexActivity extends AppCompatActivity {
 
                     outputStream.writeBytes("exit\n");
                     outputStream.flush();
-                    su.waitFor();
+                    sh.waitFor();
                 }catch(IOException e){
                 }catch(InterruptedException e){
                 }
@@ -97,7 +122,6 @@ public class IndexActivity extends AppCompatActivity {
                 String path = RowData[3];
                 SearchIndex searchIndex = new SearchIndex(name, type, path, docName);
                 searchIndex.save();
-                //do something with "data" and "value"
             }
         } catch (IOException ex) {
             // handle exception
@@ -119,13 +143,22 @@ public class IndexActivity extends AppCompatActivity {
         Fabric.with(this, new Answers(), new Crashlytics());
         setContentView(R.layout.activity_index);
 
+
         Intent intent = getIntent();
         String docName = intent.getStringExtra("currentDocName");
+		_showToast(intent.getStringExtra("currentDocDirName"));
+		getSupportActionBar().setTitle(docName);
 
         if(!(Select.from(SearchIndex.class)
             .where(Condition.prop("DOC_TYPE").eq(intent.getStringExtra("currentDocName")))
             .list().size() > 0)) {
-            importCSV("/sdcard/Download/" + intent.getStringExtra("currentDocDirName") + "/Contents/Resources/test.csv");
+
+			File tokenFile = new File("/sdcard/Download/" + intent.getStringExtra("currentDocDirName") + "/Contents/Resources/Tokens.xml");
+			if(tokenFile.isFile()) {
+				importXml(tokenFile);
+			} else {
+				importCSV("/sdcard/Download/" + intent.getStringExtra("currentDocDirName") + "/Contents/Resources/test.csv");
+			}
         }
 
         ArrayList<String> values = new ArrayList<String>();
@@ -152,7 +185,7 @@ public class IndexActivity extends AppCompatActivity {
 
     protected OnItemClickListener _createOnListItemClick() {
         return (l, v, position,id) -> {
-			binding.webview.loadUrl("file:///sdcard/Download/Emmet.docset/Contents/Resources/Documents/" + currentDocIndexs.get(position).path);
+			binding.webview.loadUrl("file:///sdcard/Download/" + getIntent().getStringExtra("currentDocDirName") + "/Contents/Resources/Documents/" + currentDocIndexs.get(position).path);
         };
     }
 

@@ -115,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
 
         docLinkMap.put("Emmet.io", "http://london.kapeli.com/feeds/Emmet.tgz");
 		docLinkMap.put("Akka", "http://newyork.kapeli.com/feeds/Akka.tgz");
+		docLinkMap.put("CSS", "http://london.kapeli.com/feeds/CSS.tgz");
+		docLinkMap.put("Django", "http://sanfrancisco.kapeli.com/feeds/Django.tgz");
+
     //     "WebOS","Ubuntu","Windows7","Max OS X"};
 
         ArrayAdapter adapter = new ArrayAdapter<String>(this,
@@ -185,18 +188,16 @@ public class MainActivity extends AppCompatActivity {
 
                 manager.enqueue(request);
             } else {
-                // SearchIndex searchIndex = Select.from(SearchIndex.class).where(Condition.prop("id").eq(position)).list().get(0);
-                // binding.webview.loadUrl("file:///sdcard/Download/" + docDir + "/Contents/Resources/Documents/index.html");
+				Intent intent = new Intent(MainActivity.this, IndexActivity.class);
+				intent.putExtra("currentDocDirName", docDir);
+				intent.putExtra("currentDocName", docZip.split(".tgz")[0]);
+				startActivity(intent);
             }
 
             // // ListView Clicked item value
             // Answers.getInstance().logCustom(new CustomEvent("User click on an Item ")
             //         .putCustomAttribute("Item Value",itemValue));
             // binding.output.setText("Click : \n  Position :"+itemPosition+"  \n  ListItem : " +itemValue);
-			Intent intent = new Intent(MainActivity.this, IndexActivity.class);
-            intent.putExtra("currentDocName", docDir);
-            intent.putExtra("currentDocDirName", docZip.split(".tgz")[0]);
-			startActivity(intent);
         };
     }
 
