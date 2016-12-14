@@ -4,10 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import java.lang.Process;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import static android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import android.databinding.DataBindingUtil;
@@ -31,8 +33,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.Process;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
@@ -45,7 +50,8 @@ import com.juliosueiras.doconmeth.databinding.ActivityIndexBinding;
 public class IndexActivity extends AppCompatActivity {
 
     ActivityIndexBinding binding;
-	List<SearchIndex> currentDocIndexs;
+	Map<String, SearchIndex> currentDocIndexs = new HashMap<String, SearchIndex>();
+	private ArrayAdapter adapter;
 
 	private static String _getValue(String tag, Element element) {
 		NodeList nodeList = element.getElementsByTagName(tag).item(0).getChildNodes();
@@ -88,7 +94,6 @@ public class IndexActivity extends AppCompatActivity {
     private void importCSV(String csvPath) {
         Intent intent = getIntent();
         String docName = intent.getStringExtra("currentDocName");
-        _showToast(docName);
 
         try {
             File csvFile = new File(csvPath);
@@ -146,8 +151,9 @@ public class IndexActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         String docName = intent.getStringExtra("currentDocName");
-		_showToast(intent.getStringExtra("currentDocDirName"));
 		getSupportActionBar().setTitle(docName);
+
+
 
         if(!(Select.from(SearchIndex.class)
             .where(Condition.prop("DOC_TYPE").eq(intent.getStringExtra("currentDocName")))
@@ -162,15 +168,16 @@ public class IndexActivity extends AppCompatActivity {
         }
 
         ArrayList<String> values = new ArrayList<String>();
-        currentDocIndexs = Select.from(SearchIndex.class)
+        List<SearchIndex> searchIndexs = Select.from(SearchIndex.class)
             .where(Condition.prop("DOC_TYPE").eq(docName))
             .list();
 
-        for (SearchIndex searchIndex : currentDocIndexs) {
+        for (SearchIndex searchIndex : searchIndexs) {
             values.add(searchIndex.name);
+            currentDocIndexs.put(searchIndex.name , searchIndex);
         }
 
-        ArrayAdapter adapter = new ArrayAdapter<String>(this,
+        adapter = new ArrayAdapter<String>(this,
                 R.layout.activity_doc, values) ;
 
 
@@ -179,13 +186,26 @@ public class IndexActivity extends AppCompatActivity {
         binding.indexList.setAdapter(adapter);
         binding.indexList.setOnItemClickListener(_createOnListItemClick());
 
+		binding.edtSearch.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void onTextChanged(CharSequence cs, int arg1, int arg2, int arg3) {
+				IndexActivity.this.adapter.getFilter().filter(cs);
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) { }
+
+			@Override
+			public void afterTextChanged(Editable arg0) {}
+		});
+
         // ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
         //         android.R.layout.simple_list_item_1, values);
 	}
 
     protected OnItemClickListener _createOnListItemClick() {
         return (l, v, position,id) -> {
-			binding.webview.loadUrl("file:///sdcard/Download/" + getIntent().getStringExtra("currentDocDirName") + "/Contents/Resources/Documents/" + currentDocIndexs.get(position).path);
+			binding.webview.loadUrl("file:///sdcard/Download/" + getIntent().getStringExtra("currentDocDirName") + "/Contents/Resources/Documents/" + currentDocIndexs.get(binding.indexList.getItemAtPosition((int)id)).path);
         };
     }
 

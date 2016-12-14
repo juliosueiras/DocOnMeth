@@ -117,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
 		docLinkMap.put("Akka", "http://newyork.kapeli.com/feeds/Akka.tgz");
 		docLinkMap.put("CSS", "http://london.kapeli.com/feeds/CSS.tgz");
 		docLinkMap.put("Django", "http://sanfrancisco.kapeli.com/feeds/Django.tgz");
+		docLinkMap.put("Android", "http://london.kapeli.com/feeds/Android.tgz");
 
     //     "WebOS","Ubuntu","Windows7","Max OS X"};
 
