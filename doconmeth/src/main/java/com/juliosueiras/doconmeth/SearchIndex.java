@@ -3,6 +3,9 @@ package com.juliosueiras.doconmeth;
 
 import com.orm.SugarRecord;
 
+/**
+ * Search index model (using Sugar ORM for management)
+ */
 public class SearchIndex extends SugarRecord {
     String name;
     String type;

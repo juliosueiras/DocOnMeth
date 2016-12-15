@@ -6,6 +6,9 @@ import android.os.Bundle;
 
 import android.support.v7.app.AppCompatActivity;
 
+/**
+ * Splash Activity(the loader activity on the home page)
+ */
 public class SplashActivity extends AppCompatActivity {
 
     @Override
@@ -13,13 +16,7 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         Intent intent = new Intent(this, MainActivity.class);
-        ProgressDialog dialog=new ProgressDialog(this);
-        dialog.setMessage("message");
-        dialog.setCancelable(false);
-        dialog.setInverseBackgroundForced(false);
-        dialog.show();
         startActivity(intent);
-        dialog.hide();
         finish();
     }
 }
